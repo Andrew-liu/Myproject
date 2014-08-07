@@ -1,11 +1,6 @@
 #include "PollPoller.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <assert.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/socket.h>
+#include <poll.h>
 #include <iostream>
 using namespace std;
 #define ERR_EXIT(m) \
@@ -35,24 +30,17 @@ void PollPoller::poll()
     if(ret == -1)
         ERR_EXIT("poll");
     nready_ = ret;
-    cout << "POLL " << ret << endl;
+    cout << "Poll " << ret << endl;
 }
 
 void PollPoller::handleAccept()
 {
-    if(nready_ == 0)
-        return;
-
     if(event_[0].revents & POLLIN)
     {
         int peerfd;
         if((peerfd = ::accept(listenfd_, NULL, NULL)) == -1)
             ERR_EXIT("accept");
-        //1. poll增加fd
-        //2. map新增一项，new TcpConnection
-        //3. 处理onConnection 
-
-        cout << "Accept a peerfd " << peerfd << endl;
+        cout << "Accept " << peerfd;
         handleConnectionEvent(peerfd);
     }
 }
@@ -62,35 +50,33 @@ void PollPoller::handleData()
 {
     //依次处理客户
     int i;
-    char buf[100];
     for(i = 1; i <= maxi_; ++i)
     {
         int peerfd = event_[i].fd;
         if(peerfd == -1)
             continue;
-
-        cout << "Handle " << peerfd << endl;
-      
         if(event_[i].revents & POLLIN)
         {
-            int ret = recv(peerfd, buf, sizeof buf, MSG_PEEK); 
-            cout << "Recv " << ret << endl;
-            if(ret == -1)
-                ERR_EXIT("recv");      
-            if(ret == 0)
+            char buf[100];
+            int nread = recv(peerfd, buf, sizeof buf, MSG_PEEK);
+            if(nread == -1)
+                ERR_EXIT("recv");
+            else if(nread == 0)
                 handleCloseEvent(i);
             else
                 handleMessageEvent(peerfd);
         }
-
     }
 }
 
 
 void PollPoller::handleConnectionEvent(int peerfd)
 {
+    //1.添加至event
+    //2.map中新增一条
+    //3.调用函数
     int i;
-    for(i = 0; i < 2048 ; ++i)
+    for(i = 1; i < 2048; ++i)
     {
         if(event_[i].fd == -1)
         {
@@ -101,7 +87,6 @@ void PollPoller::handleConnectionEvent(int peerfd)
             break;
         }
     }
-
     if(i == 2048)
     {
         fprintf(stderr, "too many clients\n");
@@ -113,35 +98,36 @@ void PollPoller::handleConnectionEvent(int peerfd)
     conn->setMessageCallback(onMessageCallback_);
     conn->setCloseCallback(onCloseCallback_);
 
-    lists_.insert(make_pair(peerfd, conn));
+    cout << "Add peerfd " << peerfd << endl;
+    pair<TcpIterator, bool> ret = lists_.insert(make_pair(peerfd, conn));
+    assert(ret.second == true);
+    //onConnectionCallback_(conn);
     conn->handleConnection();
 }
 
-
-
 void PollPoller::handleMessageEvent(int peerfd)
 {
-    //
-    TcpConnectionIterator it = lists_.find(peerfd);
+    cout << "HandleMessageEvent " << peerfd << endl;
+    TcpIterator it = lists_.find(peerfd);
     assert(it != lists_.end());
-    cout << "Handle Message " << peerfd << endl;
+    //onMessageCallback_(it->second);
     it->second->handleMessage();
 }
 
+
+
 void PollPoller::handleCloseEvent(int i)
 {
-    //1. 关闭操作符流程,获取操作符,对应的指针执行关闭操作
-    //2.删除对应的pair
-    //3.将结构体置为-1
     assert(i >= 0 && i < 2048);
     int peerfd = event_[i].fd;
-    TcpConnectionIterator it = lists_.find(peerfd);
+    assert(peerfd != -1);
+    event_[i].fd = -1;
+    cout << "Close " << peerfd << endl;
+    TcpIterator it = lists_.find(peerfd);
     assert(it != lists_.end());
-    cout << "Handle Close " << peerfd << endl;
+    //onCloseCallback_(it->second);
     it->second->handleClose();
     lists_.erase(it);
-
-    event_[i].fd = -1;
 }
 
 

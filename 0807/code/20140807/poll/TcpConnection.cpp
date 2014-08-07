@@ -15,7 +15,7 @@ TcpConnection::TcpConnection(int sockfd)
 
 TcpConnection::~TcpConnection()
 {
-    shutdown(); //关闭描述符
+    shutdown();
 }
 
 ssize_t TcpConnection::readn(char *usrbuf, size_t n)
@@ -42,10 +42,17 @@ ssize_t TcpConnection::writen(const char *usrbuf, size_t n)
         ERR_EXIT("write");
     return nwrite;
 }
-//发送消息
-void TcpConnection::send(const std::string &s)
+
+void TcpConnection::sendString(const std::string &s)
 {
     writen(s.c_str(), s.size());
+}
+
+std::string TcpConnection::receiveString()
+{
+    char buf[1024];
+    readLine(buf, 1024);
+    return std::string(buf);
 }
 
 void TcpConnection::shutdown()

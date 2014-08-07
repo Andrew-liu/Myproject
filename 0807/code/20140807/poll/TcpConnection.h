@@ -8,7 +8,6 @@
 #include <string>
 #include <memory>
 #include <functional>
-#include <iostream>
 
 class TcpConnection;
 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
@@ -28,9 +27,10 @@ class TcpConnection : private NonCopyable,
         ssize_t readn(char *usrbuf, size_t n);
         ssize_t readLine(char *usrbuf, size_t maxline);
         ssize_t writen(const char *usrbuf, size_t n);
-        void send(const std::string &s);
+        void sendString(const std::string &s);
+        std::string receiveString();
         void shutdown();
-//设置三个回调函数
+
         void setConnectionCallback(const TcpConnectionCallback &cb)
         { onConnectionCallback_ = cb; }
         void setMessageCallback(const TcpConnectionCallback &cb)
@@ -38,11 +38,10 @@ class TcpConnection : private NonCopyable,
         void setCloseCallback(const TcpConnectionCallback &cb)
         { onCloseCallback_ = cb; }
 
-//启动三个回调函数
         void handleConnection()
         { onConnectionCallback_(shared_from_this()); }
         void handleMessage()
-        { std::cout << "on TcpConnectionCallback Message" << std::endl;onMessageCallback_(shared_from_this()); }
+        { onMessageCallback_(shared_from_this()); }
         void handleClose()
         { onCloseCallback_(shared_from_this()); }
 
