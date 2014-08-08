@@ -9,6 +9,12 @@
 #include <memory>
 #include <functional>
 
+#define ERR_EXIT(m) \
+    do { \
+        perror(m);\
+        exit(EXIT_FAILURE);\
+    }while(0)
+
 class TcpConnection;
 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 
