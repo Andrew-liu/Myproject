@@ -7,9 +7,13 @@ using namespace std;
     }while(0)
 
 
-TcpConnection::TcpConnection(int sockfd)
+TcpConnection::TcpConnection(int sockfd,
+                             const InetAddress &localAddr,
+                             const InetAddress &peerAddr)
     :sockfd_(sockfd),
-     buffer_(sockfd)
+     buffer_(sockfd),
+     localAddr_(localAddr),
+     peerAddr_(peerAddr)
 {
 }
 
@@ -17,7 +21,7 @@ TcpConnection::~TcpConnection()
 {
     shutdown();
 }
-//主要进行了一些错误处理
+
 ssize_t TcpConnection::readn(char *usrbuf, size_t n)
 {
     int nread = buffer_.readn(usrbuf, n); 
@@ -43,14 +47,12 @@ ssize_t TcpConnection::writen(const char *usrbuf, size_t n)
     return nwrite;
 }
 
-//发送字符串string进行了包装,转化为c风格型字符串
-void TcpConnection::sendString(const std::string &s)
+void TcpConnection::send(const std::string &s)
 {
     writen(s.c_str(), s.size());
 }
 
-//接收字符串进行包装,返回了string
-std::string TcpConnection::receiveString()
+std::string TcpConnection::receive()
 {
     char buf[1024];
     readLine(buf, 1024);
@@ -63,6 +65,23 @@ void TcpConnection::shutdown()
 }
 
 
+void TcpConnection::handleConnection()
+{ 
+    if(onConnectionCallback_) 
+        onConnectionCallback_(shared_from_this()); 
+}
+
+void TcpConnection::handleMessage()
+{ 
+    if(onMessageCallback_)
+        onMessageCallback_(shared_from_this()); 
+}
+
+void TcpConnection::handleClose()
+{
+    if(onCloseCallback_)
+        onCloseCallback_(shared_from_this()); 
+}
 
 
 
