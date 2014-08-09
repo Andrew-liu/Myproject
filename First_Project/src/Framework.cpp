@@ -2,8 +2,23 @@
 #include <iostream>
 #include <string>
 #include <ctype.h>
+#include <signal.h>
+#include <stdio.h>
 using namespace std;
 using namespace placeholders;
+
+class IgnoreSigpipe
+{
+    public:
+        IgnoreSigpipe()
+        {
+            if(::signal(SIGPIPE, SIG_IGN) == SIG_ERR)
+                ERR_EXIT("signal");
+        }
+
+};
+IgnoreSigpipe OBJ;
+
 
 Framework::Framework(const InetAddress &addr)
     :server_(addr),
@@ -12,6 +27,7 @@ Framework::Framework(const InetAddress &addr)
     search_.open_file(config_.return_file());
     search_.read_file();
     search_.make_map();
+    search_.write_file(config_.return_out());
     server_.setConnection(bind(&Framework::onConnection, this, _1));
     server_.setMessage(bind(&Framework::onMessage, this, _1));
     server_.setClose(bind(&Framework::onClose, this, _1));

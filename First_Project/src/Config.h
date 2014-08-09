@@ -14,9 +14,12 @@ class Config : private NonCopyable
         {   return filename_; }
         std::string return_log()
         {   return log_; }
+        std::string return_out()
+        {   return out_; }
     private:
         std::string filename_;
         std::string log_;
+        std::string out_;
 };
 
 #endif

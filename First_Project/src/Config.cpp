@@ -2,7 +2,8 @@
 
 Config::Config()
     :filename_("../config/The_Holy_Bible.txt"),
-     log_("../log/log.txt")
+     log_("../log/log.txt"),
+     out_("../config/directory.txt")
 {}
 
 Config::~Config()

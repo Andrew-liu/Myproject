@@ -1,5 +1,6 @@
 #include "TextQuery.h"
 #include <string.h>
+#include <iomanip>
 using namespace std;
 
 #define ERR_EXIT(m) \
@@ -10,7 +11,7 @@ using namespace std;
 
 TextQuery::TextQuery()
 {
-    memset(key_, 0, sizeof(key));
+    memset(&key_, 0, sizeof(key_));
 }
 
 TextQuery::~TextQuery(){}
@@ -74,12 +75,31 @@ void TextQuery::make_map()
     }
 }
 
+void TextQuery::write_file(string filename)
+{
+    ofstream out;
+    out.close();
+    out.clear();
+    out.open(filename.c_str(), ios::app|ios::in);
+    if(!out)
+    {
+        ERR_EXIT("out.open");
+    }
+
+    for(map<string, Fre_line>::iterator it = word_.begin(); it != word_.end(); ++it)
+    {
+        out  << left << setw(20) << it->first << setw(10) << (it->second).cnt << endl;
+    }
+    out.close();   
+}
+
+
 string TextQuery::search_file(string &s)
 {
     pair<string, int> only;
     string word(s.begin(), ----s.end());
-    int min = 3, temp;
-    for(map<string, Fre_line>::iterator it = map.begin(); it != map.end(); ++it)
+    int min = 4, temp;
+    for(map<string, Fre_line>::iterator it = word_.begin(); it != word_.end(); ++it)
     {
         temp = edit_distance(word, it->first);
         if(temp > 3)
@@ -88,59 +108,61 @@ string TextQuery::search_file(string &s)
             if(temp < min)//编辑距离小于最小值的时候, 保存单词和词频
             {
                 min = temp;
+                cout << it->first << endl;
                 only = make_pair(it->first, (it->second).cnt);
             }
-            else if(temp == min) //变异距离相当的时候,比较词频
+            else if(temp == min) //编辑距离相当的时候,比较词频
             {
-                if(only->second < (it))
+                if(only.second > (it->second).cnt)
+                {
+                    only = make_pair(it->first, (it->second).cnt);
+                }
+                else //词频相等或者大于的时候直接进入下一次循环
+                    continue;
             }
     }
-
-
-
-
-    //cout << word;
-    /*
-    map<string, Fre_line>::iterator it = word_.find(word);
-    if(it != word_.end())
+    if(min == 4)
     {
-        ostringstream os;
-        os << s << " occurs " << (it->second).cnt << " with a given key" << endl; 
-        ret = os.str();
+        string ret("No match word!!\n");
+        return  ret;
     }
     else
     {
-        ret = "Not search this word !\n" ;
+        return only.first;
     }
-    */
-    return ret;
 }
 
 int TextQuery::edit_distance(const string &s1, const string &s2)
 {
     memset(memo_, 0, sizeof(memo_));
-    int m = s1.size();
-    int n = s1.size();
-    for(int i = 1; i <= m; ++i)
-        memo_[i][0] = i;
-    for(int j = 1; j <= n; ++j)
-        memo_[0][j] = j;
-    for(int i = 1; i <= m; ++i)
+    int x = s1.size();
+    int y = s2.size();
+    //初始化
+    for(int i = 1; i <= x; ++i)
     {
-        for(int j = 1; j <= n; ++j)
+        memo_[i][0] = i;
+    }
+    for(int j = 1; j <= y; ++j)
+    {
+        memo_[0][j] = j;
+    }
+    for(int i = 1; i <= x; ++i)
+    {
+        for(int j = 1; j <= y; ++j)
         {
             int inserts = memo_[i][j-1] + 1;
             int deletes = memo_[i-1][j] + 1;
-            int replaces;
-            if(s1[i-1] == s1[j-1])
-                replaces = memo_[i-1][j-1];
+            int replace;
+            if(s1[i-1] == s2[j-1])
+                replace = memo_[i-1][j-1];
             else
-                replaces = memo_[i-1][j-1] + 1;
-            memo_[i][j] = min(min(inserts, deletes), replaces);
+                replace = memo_[i-1][j-1] + 1;
+            memo_[i][j] = min(min(inserts, deletes), replace);
         }
     }
-    return memo_[m][n];
+    return memo_[x][y];
 }
+
 
 
 int cmp(const pair<string, int> &a, const pair<string, int> &b)

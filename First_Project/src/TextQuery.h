@@ -17,10 +17,10 @@ typedef std::vector<std::string>::size_type line_no;
 
 struct Key_word
 {
-    string word;
+    std::string word;
     int distance;
     int cnt;
-}
+};
 struct Fre_line
 {
     int cnt; //存储词频
@@ -36,6 +36,7 @@ class TextQuery
         void read_file();//读取文件
         void change(std::string &line);
         void make_map();//建立map
+        void write_file(std::string filename);
         std::string search_file(std::string &s);//查询单词
 
         int edit_distance(const std::string &s1, const std::string &s2);
