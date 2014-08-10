@@ -4,6 +4,7 @@
 #include <echo/TcpServer.h>
 #include <echo/ThreadPool.h>
 #include <echo/NonCopyable.h>
+#include "Time_Thread.h"
 #include "TextQuery.h"
 #include "Config.h"
 #include <iostream>
@@ -30,6 +31,7 @@ class Framework : private NonCopyable
         ThreadPool pool_;
         TextQuery  search_;
         Config     config_;
+        Foo        foo_;
 };
 
 #endif

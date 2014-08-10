@@ -1,32 +1,56 @@
-#1. github上的操作
+#**Mini项目 (单词纠错)**
 
-##1.1. 初始化操作
-在http://github.com 上注册自己的github账户后，要执行语句
-git config --global user.name "yourname"
-git config --global user.email "XXX@XXX.com"
-这样等于是在本地标记了自己的账户，以后就可以直接使用了。
+[TOC]
 
-##1.2. 在最后有获取密钥的方法
+#1. 编辑距离 
+: 需要动作的次数(比较多种组合的编辑距离,找到编辑距离最小的)
 
-1. 要上传文件到GitHub的Git系统上，需要一个SSH密匙来认证，在文章最后有方法。
-2. 将SSH Key提交到GitHub `在设置中添加`
+> 插入 删除  修改  
 
-##1.3. 基本git操作
-上传代码到git的步骤：
-1. git init
-建立一个仓库。
+##1.1. 动态规划(找出最小编辑距离)
+    1. 找出编辑最小的集合
+    2. 在通过排序 找出查询频率最高的
+    3. 编辑距离过高(>3)可以直接抛弃
+    4. 每个候选词可以放到优先级队列里
 
-2. git add XXX
-添加文件XXX。add后面加“.”，添加当前目录所有文件。
+##1.2. 数据结构设计
+ `<最小编辑距离,搜索频率>`(只推荐给用户一个词条) (小根堆) 
+> 单词 最小编辑距离 搜索词频
 
-3. git commit -m 'message' (`最后一个附加信息相当于标签`)
-上传时附加说明信息message。
+#2. 优化过程
+减少计算编辑距离的范围(剪枝): 限制编剧距离
+1. 字符串长度的差值大于极限值(自定义1, 2, 3的编辑距离),直接舍弃
+2. 建立索引: 找出查询词每个单词取并集
+3. 剔除高频出现的字母
+4. 缓存(定时器)
 
-4. git remote add origin XXX@github.com:XXX/XXX.git   (`给git仓库的地址取一个别名`)
-这一句将origin用作XXX@github.com:XXX/XXX.git的别名，以后就可以方便的用origin代表XXX@github.com:XXX/XXX.git了。
-> git remote rm origin用于删除别名
+#3. UDP服务器
+监听和调度
+线程池(随机调度或者轮询) 运行以上工作  计算后 返回客户端
 
-5. git push -u origin master   上传带`master`标签的文件到github
-上传当前目录到github的master分支
+##3.1. 线程函数设计
+线程函数
+1. 候选词集
+2. cache
+3. cache更新磁盘(定期汇总cache的变量到一个专门的扫描线程,统一写入磁盘,再由线程读取回去)
+map
+hashmap
 
-> 如果原来仓库中有另外一个文件, 首先应该进行github仓库代码下载, 合并后总体上传,因为github并不能识别代码是不是一个项目
+
+#4. 中文纠错
+GBK编码
+- ASCII 0-127
+- GBK编码  2个字节表示
+
+#5. 其他无关事件
+ASN
+google protobuffer 将数据结构转换成头文件
+
+
+#建立索引
+key i value ipad phone
+
+src bin conf(端口文件路径) log(出错路径,操作记录) data inc lib makefile
+
+读数据文件 
+

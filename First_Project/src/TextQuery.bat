@@ -149,16 +149,18 @@ string TextQuery::search_cache(string &s)
 {
     string word(s.begin(), ----s.end());
     cout << word << " --yes" << endl;
-    string ret(cache_.get(word));
+    string ret(cache_.get(word.c_str()));
     if(ret == string())
     {      
 //        ret = search_file(word);
         make_queue(word);
         ret = return_key();
-        cache_.put(word, ret);
+        cache_.put(word.c_str(), ret);
     }
-    return ret;
+    else
+        return ret;
 }
+
 
 string TextQuery::search_file(string &s)
 {
