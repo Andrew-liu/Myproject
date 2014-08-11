@@ -22,12 +22,15 @@ IgnoreSigpipe OBJ;
 
 Framework::Framework(const InetAddress &addr)
     :server_(addr),
-     pool_(1000, 4)
+     pool_(1000, 4),
+     foo_(search_)
 {
     search_.open_file(config_.return_file());
     search_.read_file();
     search_.make_map();
     search_.write_file(config_.return_out());
+    search_.make_index();
+//    foo_.read_wcache();
 //    foo_.RunCallback();
     server_.setConnection(bind(&Framework::onConnection, this, _1));
     server_.setMessage(bind(&Framework::onMessage, this, _1));

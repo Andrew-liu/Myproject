@@ -94,34 +94,88 @@ void TextQuery::write_file(string filename)
     out.close();   
 }
 
+void TextQuery::make_index()
+{
+    for(map<string, Fre_line>::iterator it = word_.begin(); it != word_.end(); ++it)
+    {
+        pair<string, int> temp = make_pair(it->first, (it->second).cnt); //单词,词频
+        insert_index(temp);
+    }
+}
+
+void TextQuery::insert_index(std::pair<string, int> word)
+{
+    for(string::iterator it = word.first.begin(); it != word.first.end(); ++it)
+    {
+        index_[*it - 97].insert(word);//小写字母-97就是map对象字母表的下表
+    }
+}
+
 void TextQuery::make_queue(string &s)
 { 
     int temp;
+    set<candidate> set_words;
     while(!cand_.empty())
     {
         cand_.pop();
     }
     string word(s.begin(), s.end());
     cout << word << " ---queue" <<  endl;
-    for(map<string, Fre_line>::iterator it = word_.begin(); it != word_.end(); ++it)
+    for(string::iterator ix = word.begin(); ix != word.end(); ++ix)
     {
-        temp = edit_distance(word, it->first);
-        //cout << temp << endl;
-        if(temp >= 3)
+        if(*ix == 'i' || *ix == 'e' || *ix == 'a')
             continue;
-        if(temp < 3)
+        for(map<string, int>::iterator iter = index_[*ix - 97].begin(); iter != index_[*ix - 97].end(); ++iter )
         {
-            candidate cand;
+            temp = edit_distance(word, iter->first);
+            //cout << temp << endl;
+            if(temp >= 3)
+                continue;
+            if(temp < 3)
+            {
+                candidate cand;
 // bug     memset(&cand, 0, sizeof(cand));
-            cand.word = it->first;
-            cand.distance = temp;
-            cand.frequence = (it->second).cnt;
-//            cout << cand.word << " " << cand.frequence << " " << cand.distance << endl;
-            cand_.push(cand);
+                cand.word = iter->first;
+                cand.distance = temp;
+                cand.frequence = iter->second;
+                //cout << cand.word << " " << cand.frequence << " " << cand.distance << endl;
+                //
+                //首先放入set集合,防止重复,再写入cand_
+                set_words.insert(cand);
+             }
+            
+        }
+    }
+    //如果集合为空的时候进行优先队列查询
+    if(set_words.empty())
+    {
+
+        for(map<string, Fre_line>::iterator it = word_.begin(); it != word_.end(); ++it)
+        {
+            temp = edit_distance(word, it->first);
+            //cout << temp << endl;
+            if(temp >= 3)
+                continue;
+            if(temp < 3)
+            {
+                candidate cand;
+// bug     memset(&cand, 0, sizeof(cand));
+                cand.word = it->first;
+                cand.distance = temp;
+                cand.frequence = (it->second).cnt;
+//              cout << cand.word << " " << cand.frequence << " " << cand.distance << endl;
+                cand_.push(cand);
+            }
+        }
+    }
+    else
+    {
+        for(set<candidate>::iterator im = set_words.begin(); im != set_words.end(); ++im)
+        {
+            cand_.push(*im);
         }
     }
 }
-
 string TextQuery::return_key()
 {
     string ret, temp;
@@ -149,18 +203,16 @@ string TextQuery::search_cache(string &s)
 {
     string word(s.begin(), ----s.end());
     cout << word << " --yes" << endl;
-    string ret(cache_.get(word.c_str()));
+    string ret(cache_.get(word));
     if(ret == string())
     {      
 //        ret = search_file(word);
         make_queue(word);
         ret = return_key();
-        cache_.put(word.c_str(), ret);
+        cache_.put(word, ret);
     }
-    else
-        return ret;
+    return ret;
 }
-
 
 string TextQuery::search_file(string &s)
 {

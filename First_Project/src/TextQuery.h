@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <queue>
 #include "Cache.h"
+#include "Config.h"
 
 #define MAXSIZE 100
 typedef std::vector<std::string>::size_type line_no;
@@ -58,10 +59,16 @@ class TextQuery
         void change(std::string &line);
         void make_map();//建立map
         void make_queue(std::string &s);
+        void make_index();
+        void insert_index(std::pair<std::string, int >word);
         void write_file(std::string filename);
         std::string return_key();
         std::string search_file(std::string &s);//查询单词
         std::string search_cache(std::string &s);
+        void write_cache();
+        Cache<std::string, std::string> return_cache()
+        {   return cache_; }
+        
         int edit_distance(const std::string &s1, const std::string &s2);
         void sort_map(int size);
 
@@ -74,6 +81,8 @@ class TextQuery
         Key_word                        key_;
         //Cache<const char *, std::string> cache_;
         Cache<std::string, std::string> cache_;
+        std::map<std::string, int >     index_[26];
+        Config                          config_;
 };
 int cmp(const std::pair<std::string, int> &a, const std::pair<std::string, int> &b);
 #endif

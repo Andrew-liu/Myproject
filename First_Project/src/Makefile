@@ -2,7 +2,7 @@
 CC=g++
 CFLAGS=-Wall -g
 BIN=a.out
-OBJS=Framework.o TextQuery.o main.o Config.o
+OBJS=Framework.o TextQuery.o main.o Config.o Time_Thread.o
 STARD=-std=c++0x -rdynamic -Wno-deprecated
 LINKS=-lpthread -lecho
 $(BIN):$(OBJS)

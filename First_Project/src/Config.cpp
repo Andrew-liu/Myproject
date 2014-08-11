@@ -2,7 +2,7 @@
 
 Config::Config()
     :filename_("../config/The_Holy_Bible.txt"),
-     log_("../log/log.txt"),
+     wcache_("../config/cache.txt"),
      out_("../config/directory.txt")
 {}
 

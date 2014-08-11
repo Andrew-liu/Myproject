@@ -12,13 +12,13 @@ class Config : private NonCopyable
 
         std::string return_file()
         {   return filename_; }
-        std::string return_log()
-        {   return log_; }
+        std::string return_wcache()
+        {   return wcache_; }
         std::string return_out()
         {   return out_; }
     private:
         std::string filename_;
-        std::string log_;
+        std::string wcache_;
         std::string out_;
 };
 

@@ -87,6 +87,28 @@ private:
         node->next->prev = node;
         */
     }
+public:
+    vector< pair<K, T> > find_all()
+    {
+        vector< pair<K, T> > cache;
+        Node<K, T> *cur = head_;
+        while(cur != tail_)
+        {
+//            cout << cur->key << " "<< cur->data <<endl;
+            cache.push_back(make_pair(cur->key, cur->data));
+            cur = cur->next;
+        }
+        /*
+        if(cache.empty())
+        {
+            return vector< pair<K, T> >();
+        }
+        else
+        {
+        */
+            return cache;
+        //}
+    }
 private:
     unordered_map<K, Node<K,T>* > hashmap_;
 //    hash_map<K, Node<K,T>* > hashmap_;
