@@ -1,7 +1,7 @@
 #include "Config.h"
 
 Config::Config()
-    :filename_("../config/The_Holy_Bible.txt"),
+    :filename_("../config/New_Novel.txt"),
      wcache_("../config/cache.txt"),
      out_("../config/directory.txt")
 {}

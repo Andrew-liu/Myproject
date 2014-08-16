@@ -69,9 +69,9 @@ void Framework::search(std::string &word, const TcpConnectionPtr &conn)
 {
     string ret_s;
 //    ret_s = search_.search_file(word);
-//    search_.make_queue(word);
-//    ret_s = search_.return_key();
-    ret_s = search_.search_cache(word);
+    search_.make_queue(word);
+    ret_s = search_.return_key();
+//    ret_s = search_.search_cache(word);
     conn->send(ret_s);
 }
 

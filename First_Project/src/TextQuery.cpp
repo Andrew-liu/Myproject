@@ -2,7 +2,6 @@
 #include <string.h>
 #include <iomanip>
 using namespace std;
-
 #define ERR_EXIT(m) \
     do { \
         perror(m);\
@@ -35,9 +34,12 @@ void TextQuery::read_file()
     while(getline(in,line),!in.eof())
     {
         change(line);
+//        parseUTF8String(line, article_);
         article_.push_back(line);
-//        cout << line << endl;
+        //cout << line << endl;
     }
+        cout << line << endl;
+        cout << "read_file" << endl;
 }
 void TextQuery::change(string &line)
 {
@@ -67,13 +69,14 @@ void TextQuery::make_map()
     string word;
     for(vector<string>::size_type ix = 0; ix != article_.size(); ++ix)
     {
-        istringstream s_in(article_[ix]);
+        istringstream s_in(string(article_[ix]));
         while(s_in >> word)
         {
             ++ (word_[word].cnt);//词频加一
             word_[word].nline.insert(ix); //行号加入set
         }
     }
+    cout << "make_map" << endl;
 }
 
 void TextQuery::write_file(string filename)
@@ -92,6 +95,7 @@ void TextQuery::write_file(string filename)
         out  << left << setw(20) << it->first << setw(10) << (it->second).cnt << endl;
     }
     out.close();   
+    cout << "write_file" << endl;
 }
 
 void TextQuery::make_index()
@@ -101,18 +105,24 @@ void TextQuery::make_index()
         pair<string, int> temp = make_pair(it->first, (it->second).cnt); //单词,词频
         insert_index(temp);
     }
+    cout << "make index" << endl;
 }
+
 
 void TextQuery::insert_index(std::pair<string, int> word)
 {
+    /*
     for(string::iterator it = word.first.begin(); it != word.first.end(); ++it)
     {
         index_[*it - 97].insert(word);//小写字母-97就是map对象字母表的下表
     }
+    cout << "insert_index"<< endl;
+    */
 }
 
 void TextQuery::make_queue(string &s)
 { 
+    cout << " begin" << endl;
     int temp;
     set<candidate> set_words;
     while(!cand_.empty())
@@ -121,6 +131,7 @@ void TextQuery::make_queue(string &s)
     }
     string word(s.begin(), s.end());
     cout << word << " ---queue" <<  endl;
+    /*
     for(string::iterator ix = word.begin(); ix != word.end(); ++ix)
     {
         if(*ix == 'i' || *ix == 'e' || *ix == 'a')
@@ -146,6 +157,7 @@ void TextQuery::make_queue(string &s)
             
         }
     }
+    */
     //如果集合为空的时候进行优先队列查询
     if(set_words.empty())
     {
@@ -175,6 +187,7 @@ void TextQuery::make_queue(string &s)
             cand_.push(*im);
         }
     }
+    cout << "make queue" << endl;
 }
 string TextQuery::return_key()
 {
@@ -271,7 +284,7 @@ string TextQuery::search_file(string &s)
     }
 }
 
-int TextQuery::edit_distance(const string &s1, const string &s2)
+int TextQuery::old_edit_distance(const string &s1, const string &s2)
 {
     memset(memo_, 0, sizeof(memo_));
     int x = s1.size();
@@ -345,3 +358,69 @@ int main(int argc, const char *argv[])
             return 0;
                 }
                 */
+
+
+  int TextQuery::getLenOfUTF8(unsigned char c)
+    {
+        int cnt = 0;
+        while(c & (1 << (7-cnt)))
+            ++cnt;
+        return cnt; 
+    }
+
+    //e5 ae bf
+    //把字符串解析成uint32_t数组
+    void TextQuery::parseUTF8String(const string &s, vector<uint32_t> &vec)
+    {
+        vec.clear();
+        for(string::size_type ix = 0; ix != s.size(); ++ix)
+        {
+            int len = getLenOfUTF8(s[ix]);
+            uint32_t t = (unsigned char)s[ix]; //e5
+            if(len > 1)
+            {
+                --len;
+                //拼接剩余的字节
+                while(len--)
+                {
+                    t = (t << 8) + (unsigned char)s[++ix];
+                }
+            }
+            vec.push_back(t);
+        }
+    }
+
+
+    int TextQuery::edit_distance_uint_32(const vector<uint32_t> &w1,
+            const vector<uint32_t> &w2) {
+        int len_a = w1.size();
+        int len_b = w2.size();
+        int memo[100][100];
+        memset(memo, 0x00, 100 * 100 * sizeof(int));
+        for (int i = 1; i <= len_a; ++i) {
+            memo[i][0] = i;
+        }
+        for (int j = 1; j <= len_b; ++j) {
+            memo[0][j] = j;
+        }
+        for (int i = 1; i <= len_a; ++i) {
+            for (int j = 1; j <= len_b; ++j) {
+                if (w1[i - 1] == w2[j - 1]) {
+                    memo[i][j] = memo[i - 1][j - 1];
+                } else {
+                    memo[i][j] = MIN(memo[i - 1][j - 1], memo[i][j - 1],
+                            memo[i - 1][j]) + 1;
+                }
+            }
+        }
+        return memo[len_a][len_b];
+    }
+
+int TextQuery::edit_distance(const string &a, const string &b) {
+    vector<uint32_t> w1, w2;
+    parseUTF8String(a, w1);
+    parseUTF8String(b, w2);
+    return edit_distance_uint_32(w1, w2);
+}
+
+

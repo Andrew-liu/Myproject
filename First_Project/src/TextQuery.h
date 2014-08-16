@@ -14,7 +14,7 @@
 #include <queue>
 #include "Cache.h"
 #include "Config.h"
-
+#include <stdint.h>
 #define MAXSIZE 100
 typedef std::vector<std::string>::size_type line_no;
 
@@ -69,8 +69,16 @@ class TextQuery
         Cache<std::string, std::string> return_cache()
         {   return cache_; }
         
-        int edit_distance(const std::string &s1, const std::string &s2);
+        int old_edit_distance(const std::string &s1, const std::string &s2);
         void sort_map(int size);
+        int getLenOfUTF8(unsigned char c);
+        void parseUTF8String(const string &s, vector<uint32_t> &vec);
+
+         int edit_distance_uint_32(const vector<uint32_t> &w1,
+            const vector<uint32_t> &w2);
+
+        int edit_distance(const string &a, const string &b);
+
 
     private:
         std::ifstream                   in;
@@ -85,4 +93,10 @@ class TextQuery
         Config                          config_;
 };
 int cmp(const std::pair<std::string, int> &a, const std::pair<std::string, int> &b);
+ inline int MIN(int a, int b, int c) {
+        int ret = (a < b) ? a : b;
+        ret = (ret < c) ? ret : c;
+        return ret;
+    }
+
 #endif

@@ -2,7 +2,7 @@
 CC=g++
 CFLAGS=-Wall -g
 BIN=a.out
-OBJS=Socket.o Rio.o TcpConnection.o Poll_t.o InetAddress.o TcpSever.o Thread.o Exception.o  ./Test/test_tcpsever.cpp
+OBJS=Socket.o Rio.o TcpConnection.o Poll_t.o InetAddress.o TcpSever.o Thread.o Exception.o 
 STARD=-std=c++0x -rdynamic
 LINKS=-lpthread
 $(BIN):$(OBJS)
